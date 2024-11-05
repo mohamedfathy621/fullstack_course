@@ -3,13 +3,15 @@ import Numbers from './Numbers'
 import Filter from './Filter'
 import PersonForm from './PersonForm'
 import Phone_service from './Phone_service'
+import Notification from './Notfication'
+import './app.css'
 const App = () => {
   const [persons, setPersons] = useState([
   ]) ;
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
-
+  const [message,setMessage] = useState(null);
   useEffect(() => {
       Phone_service.get_all().then((response)=>{
       setPersons(response.data);
@@ -33,6 +35,9 @@ const App = () => {
     if(result){
       Phone_service.delete_person(id).then((response)=>{
         setPersons(persons.filter((person)=> person.id!=response.data.id));
+        setMessage([`Deleted ${name}`,'resolved']);
+      }).catch((err)=>{
+        setMessage([`information of ${name} has already been removed from the server`,'rejected']);
       })
     }
    else{
@@ -52,6 +57,9 @@ const App = () => {
               (person)=>
                 person.id==persons[check].id?{...new_person,id:person.id}:person
             ));
+            setMessage([`Updated ${newName}`,'resolved']);
+          }).catch((err)=>{
+            setMessage([`information of ${name} has already been removed from the server`,'rejected']);
           });
       }
       else{
@@ -61,6 +69,7 @@ const App = () => {
     else{
       Phone_service.add_person(new_person).then((response)=>{
         setPersons(persons.concat(response.data));
+        setMessage([`Added ${newName}`,'resolved']);
       })
       setNewName('');
       setNewNumber('');
@@ -70,6 +79,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+       <Notification message={message} setMessage={setMessage}/>
        <Filter filter={filter} changefilter={changefilter}/>
       <h3>add a new</h3>
         <PersonForm addPerson={addPerson} newName={newName} changeName={changeName} newNumber={newNumber} changeNumber={changeNumber}/>
